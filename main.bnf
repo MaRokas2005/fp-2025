@@ -1,0 +1,24 @@
+<wp> ::= " "*
+<wpo> ::= " "+
+<dumpable> ::= "Examples"
+<char> ::= "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" 
+         | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" 
+         | "u" | "v" | "w" | "x" | "y" | "z"
+         | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" 
+         | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" 
+         | "U" | "V" | "W" | "X" | "Y" | "Z"
+         | " "
+<string> ::= <char>+
+<nonZeroDigit> ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+<digit> ::= "0" | <nonZeroDigit>
+<integer> ::= <nonZeroDigit> <digit>*
+<calories> ::= <integer>
+<dishName> ::= "\"" <string> "\""
+
+<dish> ::= "Dish" <wpo> <dishName> <wpo> <calories>
+         | "BigDish" <wpo> "(" <wp> <dish> <wp> ")" <wpo> "(" <wp> <dish> <wp> ")" <wp>
+
+<command> ::= "Dump" <wpo> <dumpable>
+            | "CreateDish" <wpo> "(" <wp> <dish> <wp> ")" <wp>
+            | "RemoveDish" <wpo> <dishName> <wp>
+            | "EatDish" <wpo> "(" <wp> <dish> <wp> ")" <wp>

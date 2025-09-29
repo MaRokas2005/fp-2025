@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use newtype instead of data" #-}
 module Lib1
     ( examples, Command(..), Dumpable(..)
     ) where
@@ -5,12 +7,26 @@ module Lib1
 data Dumpable = Examples
   deriving Show
 
--- This is a "root" ADT representing your grammar,
--- Please expand this ADT as needed
-data Command = Dump Dumpable
+-- Recursive Dish definition
+data Dish
+    = Dish String Integer
+    | BigDish Dish Dish
+  deriving Show
+
+-- Root ADT representing grammar commands
+data Command
+    = Dump Dumpable
+    | CreateDish Dish
+    | RemoveDish String
+    | EatDish Dish
   deriving Show
 
 examples :: [Command]
 examples = [
-    Dump Examples
+    Dump Examples, 
+    CreateDish (Dish "pasta" 200), 
+    CreateDish (BigDish (Dish "salad" 100) (Dish "soup" 150)), 
+    RemoveDish "pasta", 
+    EatDish (Dish "salad" 250), 
+    EatDish (BigDish (BigDish (Dish "salad" 100) (Dish "soup" 150)) (Dish "ice cream" 150))
     ]
