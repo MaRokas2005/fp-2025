@@ -1,5 +1,9 @@
 # fp-2025
 
+## Lesson notes
+
+Can be viewed [here](https://htmlpreview.github.io/?https://github.com/vipo/fp-2025/blob/main/index.html)
+
 ## Setup
 
 ### To get started, you first need to open the project using Visual Studio Code and having Docker Desktop

@@ -7,6 +7,8 @@ import Data.Char(isAlpha, isDigit)
 import Data.List(isPrefixOf)
 import Control.Concurrent (Chan)
 
+import Control.Monad
+
 
 add :: Int -> Int -> Int
 add a b = a + b
