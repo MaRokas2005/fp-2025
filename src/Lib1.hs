@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Lib1
-    ( examples, Command(..), Dumpable(..)
+    ( examples, Command(..), Dumpable(..), Dish(..)
     ) where
 
 data Dumpable = Examples
