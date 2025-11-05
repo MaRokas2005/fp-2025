@@ -50,6 +50,20 @@ and5 p1 p2 p3 p4 p5 input = case and4 p1 p2 p3 p4 input of
         Left e -> Left e
         Right (v5, rest2) -> Right ((v1, v2, v3, v4, v5), rest2)
 
+many :: Parser a -> Parser [a]
+many p = many' p []
+  where
+    many' p' acc input = case p' input of
+      Left _ -> Right (acc, input)
+      Right (v, r) -> many' p' (acc ++ [v]) r
+
+many1 :: Parser a -> Parser [a]
+many1 p input
+  = case many p input of
+      Left e -> Left e
+      Right ([], _) -> Left "At least one value required"
+      Right a -> Right a
+
 -- >>> parseLiteral "Dump " "Dump Examplesrest"
 -- Right ("Dump ","Examplesrest")
 parseLiteral :: String -> Parser String
@@ -63,23 +77,32 @@ parseLiteral pref = pmap (const pref) match
 parseChar :: Char -> Parser Char
 parseChar c = pmap (const c) (parseLiteral [c])
 
--- >>> parseDishName "\"Chicken Soupbh\" restbv h"
+parseLetter :: Parser Char
+parseLetter [] = Left "A letter is expected but got empty input"
+parseLetter (h:t) =
+  if isAlpha h
+    then Right (h, t)
+    else Left ("A letter is expected, but got " ++ [h])
+
+-- >>> parseWord "afds5345"
+-- Right ("afds","5345")
+parseWord :: Parser String
+parseWord = many1 parseLetter
+
+-- >>> parseSpaceWithWord " afds hfhg5345"
+-- Right (" afds"," hfhg5345")
+parseSpaceWithWord :: Parser String
+parseSpaceWithWord = pmap (\(_, word) -> " " ++ word) (and2 (parseChar ' ') parseWord)
+
+-- >>> parseSentence "hello haskell 123"
+-- Right ("hello haskell"," 123")
+parseSentence :: Parser String
+parseSentence = pmap (\(first, rest) -> first ++ concat rest) (and2 parseWord (many parseSpaceWithWord))
+
+-- >>> parseDishName "\"Chicken Soup\" restbv h"
 -- Right ("Chicken Soupbh"," restbv h")
 parseDishName :: Parser String
-parseDishName = pmap (\(_, name, _) -> name) (and3 (parseChar '"') inner (parseChar '"'))
-  where
-    inner :: Parser String
-    inner s =
-      let (content, rest) = span (/= '"') s
-          valid = case content of
-                    [] -> False
-                    _  -> let parts = words content
-                          in not (null parts)
-                             && all (all isAlpha) parts
-                             && content == unwords parts
-      in case rest of
-           ('"':_) | valid -> Right (content, rest)
-           _               -> Left "Unterminated or invalid string"
+parseDishName = pmap (\(_, name, _) -> name) (and3 (parseChar '"') parseSentence (parseChar '"'))
 
 -- >>> parseNonZeroDigit "8954 \"Chicken Soup\"restbv"
 -- Right ('8',"954 \"Chicken Soup\"restbv")
