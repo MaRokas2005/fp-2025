@@ -32,6 +32,9 @@ library
       Lessons.Lesson06
       Lessons.Lesson07
       Lessons.Lesson08
+      Lessons.Lesson09
+      Lessons.Lesson10
+      Lessons.Lesson11
       Lib1
       Lib2
       Lib3
@@ -39,10 +42,14 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      async
+      QuickCheck
+    , async
     , base >=4.7 && <5
+    , deepseq
     , random
     , stm
+    , strict
+    , transformers
   default-language: Haskell2010
 
 executable fp2025-one
