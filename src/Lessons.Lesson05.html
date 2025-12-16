@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# OPTIONS_GHC -Wno-missing-export-lists #-}</span><span>
 </span><span id="line-2"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}</span><span>
 </span><span id="line-3"></span><span class="hs-pragma">{-# HLINT ignore &quot;Redundant lambda&quot; #-}</span><span>
-</span><span id="line-4"></span><span>
+</span><span id="line-4"></span><span class="annot"><span class="hs-comment">-- | Notes taken by Andrius Gasiukevi&#269;ius</span></span><span>
 </span><span id="line-5"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Lessons.Lesson05</span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-6"></span><span>
 </span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Foldable</span></span><span>
@@ -9,164 +9,215 @@
 </span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Char</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">isAlpha</span></span><span class="hs-special">)</span><span>
 </span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.List</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">isPrefixOf</span></span><span class="hs-special">)</span><span>
 </span><span id="line-11"></span><span>
-</span><span id="line-12"></span><span class="hs-comment">-- &gt;&gt;&gt; mappend [1,2,3] [4,5,6]</span><span>
-</span><span id="line-13"></span><span class="hs-comment">-- [1,2,3,4,5,6]</span><span>
-</span><span id="line-14"></span><span>
-</span><span id="line-15"></span><span class="hs-comment">-- &gt;&gt;&gt; mempty :: [Integer]</span><span>
-</span><span id="line-16"></span><span class="hs-comment">-- []</span><span>
-</span><span id="line-17"></span><span>
-</span><span id="line-18"></span><span class="hs-comment">-- &gt;&gt;&gt; map Sum [1,2,3]</span><span>
-</span><span id="line-19"></span><span class="hs-comment">-- [Sum {getSum = 1},Sum {getSum = 2},Sum {getSum = 3}]</span><span>
-</span><span id="line-20"></span><span>
-</span><span id="line-21"></span><span class="hs-comment">-- &gt;&gt;&gt; getSum $ fold $ map Sum [1,2,3]</span><span>
-</span><span id="line-22"></span><span class="hs-comment">-- 6</span><span>
+</span><span id="line-12"></span><span class="hs-comment">-- | Recall that a monoid is a set equipped with a binary operation satisfying the closure, associativity, and identity element properties.</span><span>
+</span><span id="line-13"></span><span class="hs-comment">-- If you're familiar with Groups, you can think of it as a group which does not necessarily have the inverse element property.</span><span>
+</span><span id="line-14"></span><span class="hs-comment">-- Lists are an example of monoids.</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-comment">-- | The 'mappend' function represents the binary operation of a monoid (&quot;monoid&quot; + &quot;append&quot; -&gt; &quot;mappend&quot;).</span><span>
+</span><span id="line-17"></span><span class="hs-comment">-- Note that many instances of Monoid don't actually 'append' things in the usual sense,</span><span>
+</span><span id="line-18"></span><span class="hs-comment">-- so it's better to generally think of 'mappend' as an abstract binary operation.</span><span>
+</span><span id="line-19"></span><span class="hs-comment">-- For two lists, 'mappend' represents concatenating them into one list (similarly to the ++ operator).</span><span>
+</span><span id="line-20"></span><span class="hs-comment">--</span><span>
+</span><span id="line-21"></span><span class="hs-comment">-- &gt;&gt;&gt; mappend [1,2,3] [4,5,6]</span><span>
+</span><span id="line-22"></span><span class="hs-comment">-- [1,2,3,4,5,6]</span><span>
 </span><span id="line-23"></span><span>
-</span><span id="line-24"></span><span class="hs-comment">-- &gt;&gt;&gt; getProduct $ fold $ map Product [1,2,3]</span><span>
-</span><span id="line-25"></span><span class="hs-comment">-- 6</span><span>
-</span><span id="line-26"></span><span>
-</span><span id="line-27"></span><span class="hs-keyword">newtype</span><span> </span><span id="MySum"><span class="annot"><a href="Lessons.Lesson05.html#MySum"><span class="hs-identifier hs-var">MySum</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MySum"><span class="annot"><a href="Lessons.Lesson05.html#MySum"><span class="hs-identifier hs-var">MySum</span></a></span></span><span> </span><span class="hs-special">{</span><span id="getSum"><span class="annot"><span class="annottext">MySum -&gt; Integer
+</span><span id="line-24"></span><span class="hs-comment">-- | 'mempty' returns the identity value of a given monoid (&quot;monoid&quot; + &quot;empty&quot; -&gt; &quot;mempty&quot;).</span><span>
+</span><span id="line-25"></span><span class="hs-comment">-- 'mempty' does not take in any parameters as input, making it a polymorphic constant (determined by its output type) rather than a &quot;proper&quot; function.</span><span>
+</span><span id="line-26"></span><span class="hs-comment">-- The identity value of type '[Integer]' (list containing integers) is an empty list since `l ++ [] == l == [] ++ l` for any list l.</span><span>
+</span><span id="line-27"></span><span class="hs-comment">--</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- &gt;&gt;&gt; mempty :: [Integer]</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- []</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- | 'map' takes in a function and a list as input, applies the function to every element in the list and returns the function outputs as a new list.</span><span>
+</span><span id="line-32"></span><span class="hs-comment">-- 'Sum' is defined like this (in Data.Monoid):</span><span>
+</span><span id="line-33"></span><span class="hs-comment">-- `newtype Sum a = Sum { getSum :: a }`</span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- which is basically a wrapper with one type parameter 'a' (It also has some derived instances like Eq, Ord, Show, and Read).</span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- So here, we basically convert a list of integers into a list of integer monoids equipped with the addition operation.</span><span>
+</span><span id="line-36"></span><span class="hs-comment">--</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- &gt;&gt;&gt; map Sum [1,2,3]</span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- [Sum {getSum = 1},Sum {getSum = 2},Sum {getSum = 3}]</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- | Recall that 'getSum $ fold $ map Sum [1,2,3]' is equivalent to 'getSum (fold (map Sum [1,2,3]))'.</span><span>
+</span><span id="line-41"></span><span class="hs-comment">-- We already know what 'map Sum [1,2,3]' does from the above explanation.</span><span>
+</span><span id="line-42"></span><span class="hs-comment">-- 'fold' can be used on structures containing monoids to fold them using the monoid's associated binary operation,</span><span>
+</span><span id="line-43"></span><span class="hs-comment">-- with the identity element of the monoid as the initial value of the accumulator.</span><span>
+</span><span id="line-44"></span><span class="hs-comment">-- After folding the list, we get a new monoid 'Sum {getSum = 6}' and unwrap it to extract the value of 'getSum'.</span><span>
+</span><span id="line-45"></span><span class="hs-comment">--</span><span>
+</span><span id="line-46"></span><span class="hs-comment">-- &gt;&gt;&gt; getSum $ fold $ map Sum [1,2,3]</span><span>
+</span><span id="line-47"></span><span class="hs-comment">-- 6</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-comment">-- | 'Product' is defined in a very similar way to 'Sum'; it should be pretty easy to understand what the following code does</span><span>
+</span><span id="line-50"></span><span class="hs-comment">-- using similar reasoning as in the previous example.</span><span>
+</span><span id="line-51"></span><span class="hs-comment">--</span><span>
+</span><span id="line-52"></span><span class="hs-comment">-- &gt;&gt;&gt; getProduct $ fold $ map Product [1,2,3]</span><span>
+</span><span id="line-53"></span><span class="hs-comment">-- 6</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="annot"><span class="hs-comment">-- | Here we define a custom newtype which is similar to Sum, but is restricted to the integers.</span></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">newtype</span><span> </span><span id="MySum"><span class="annot"><a href="Lessons.Lesson05.html#MySum"><span class="hs-identifier hs-var">MySum</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MySum"><span class="annot"><a href="Lessons.Lesson05.html#MySum"><span class="hs-identifier hs-var">MySum</span></a></span></span><span> </span><span class="hs-special">{</span><span id="getSum"><span class="annot"><span class="annottext">MySum -&gt; Integer
 </span><a href="Lessons.Lesson05.html#getSum"><span class="hs-identifier hs-var hs-var">getSum</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span class="hs-special">}</span><span>
-</span><span id="line-28"></span><span>
-</span><span id="line-29"></span><span class="hs-comment">-- &gt;&gt;&gt; fold $ map All [True, True]</span><span>
-</span><span id="line-30"></span><span class="hs-comment">-- All {getAll = True}</span><span>
-</span><span id="line-31"></span><span>
-</span><span id="line-32"></span><span class="hs-comment">-- &gt;&gt;&gt; fold $ map All [True, True, False]</span><span>
-</span><span id="line-33"></span><span class="hs-comment">-- All {getAll = False}</span><span>
-</span><span id="line-34"></span><span>
-</span><span id="line-35"></span><span class="hs-comment">-- &gt;&gt;&gt; fold $ map Any [True, True, False]</span><span>
-</span><span id="line-36"></span><span class="hs-comment">-- Any {getAny = True}</span><span>
-</span><span id="line-37"></span><span>
-</span><span id="line-38"></span><span class="hs-comment">-- &gt;&gt;&gt; fold $ map Any [False, False]</span><span>
-</span><span id="line-39"></span><span class="hs-comment">-- Any {getAny = False}</span><span>
-</span><span id="line-40"></span><span>
-</span><span id="line-41"></span><span>
-</span><span id="line-42"></span><span class="hs-keyword">type</span><span> </span><span id="ErrorMsg"><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-var">ErrorMsg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">]</span><span>
-</span><span id="line-43"></span><span class="hs-keyword">type</span><span> </span><span id="Parser"><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-var">Parser</span></a></span></span><span> </span><span id="local-6989586621679050496"><span class="annot"><a href="#local-6989586621679050496"><span class="hs-identifier hs-type">e</span></a></span></span><span> </span><span id="local-6989586621679050497"><span class="annot"><a href="#local-6989586621679050497"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="#local-6989586621679050496"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679050497"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
-</span><span id="line-44"></span><span>
-</span><span id="line-45"></span><span class="annot"><a href="Lessons.Lesson05.html#parseLetter"><span class="hs-identifier hs-type">parseLetter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span>
-</span><span id="line-46"></span><span id="parseLetter"><span class="annot"><span class="annottext">parseLetter :: Parser ErrorMsg Char
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="hs-comment">-- | Any and All are also instances of Monoid. We can define their newtype using a wrapper, similarly to how Sum and Product were defined.</span><span>
+</span><span id="line-59"></span><span class="hs-comment">-- Any is equipped with the binary operation || (logical OR) and has 'False' as its identity value since 'False || True == True' and 'False || False == False'.</span><span>
+</span><span id="line-60"></span><span class="hs-comment">-- All is equipped with the binary operation &amp;&amp; (logical AND) and has 'True' as its identity value since 'True &amp;&amp; True == True' and 'True &amp;&amp; False == False'.</span><span>
+</span><span id="line-61"></span><span class="hs-comment">-- Below are some examples of folding lists containing Any and All monoids.</span><span>
+</span><span id="line-62"></span><span class="hs-comment">--</span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- &gt;&gt;&gt; fold $ map All [True, True]</span><span>
+</span><span id="line-64"></span><span class="hs-comment">-- All {getAll = True}</span><span>
+</span><span id="line-65"></span><span class="hs-comment">--</span><span>
+</span><span id="line-66"></span><span class="hs-comment">-- &gt;&gt;&gt; fold $ map All [True, True, False]</span><span>
+</span><span id="line-67"></span><span class="hs-comment">-- All {getAll = False}</span><span>
+</span><span id="line-68"></span><span class="hs-comment">--</span><span>
+</span><span id="line-69"></span><span class="hs-comment">-- &gt;&gt;&gt; fold $ map Any [True, True, False]</span><span>
+</span><span id="line-70"></span><span class="hs-comment">-- Any {getAny = True}</span><span>
+</span><span id="line-71"></span><span class="hs-comment">--</span><span>
+</span><span id="line-72"></span><span class="hs-comment">-- &gt;&gt;&gt; fold $ map Any [False, False]</span><span>
+</span><span id="line-73"></span><span class="hs-comment">-- Any {getAny = False}</span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="hs-comment">-- | We define a parser similarly to the way it was done in Lesson 4.</span><span>
+</span><span id="line-76"></span><span class="hs-comment">-- This time, the parser can return a value of type 'e' instead of just ErrorMsg as its Left value.</span><span>
+</span><span id="line-77"></span><span class="hs-comment">-- Also, ErrorMsg is a list of 'String's instead of a single String.</span><span>
+</span><span id="line-78"></span><span class="hs-keyword">type</span><span> </span><span id="ErrorMsg"><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-var">ErrorMsg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">]</span><span>
+</span><span id="line-79"></span><span class="hs-keyword">type</span><span> </span><span id="Parser"><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-var">Parser</span></a></span></span><span> </span><span id="local-6989586621679058864"><span class="annot"><a href="#local-6989586621679058864"><span class="hs-identifier hs-type">e</span></a></span></span><span> </span><span id="local-6989586621679058865"><span class="annot"><a href="#local-6989586621679058865"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="#local-6989586621679058864"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679058865"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span class="hs-comment">-- | This parser attempts to parse a single letter from the beginning of the string.</span><span>
+</span><span id="line-82"></span><span class="hs-comment">-- It works similarly to 'parseLetter' from Lesson 4 (essentially rewriting it to support the new Parser and ErrorMsg definitions).</span><span>
+</span><span id="line-83"></span><span class="annot"><a href="Lessons.Lesson05.html#parseLetter"><span class="hs-identifier hs-type">parseLetter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span>
+</span><span id="line-84"></span><span id="parseLetter"><span class="annot"><span class="annottext">parseLetter :: Parser ErrorMsg Char
 </span><a href="Lessons.Lesson05.html#parseLetter"><span class="hs-identifier hs-var hs-var">parseLetter</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ErrorMsg -&gt; Either ErrorMsg (Char, [Char])
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">[Char]
 </span><span class="hs-string">&quot;A letter is expected but got empty input&quot;</span></span><span class="hs-special">]</span><span>
-</span><span id="line-47"></span><span class="annot"><a href="Lessons.Lesson05.html#parseLetter"><span class="hs-identifier hs-var">parseLetter</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679050499"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679050499"><span class="hs-identifier hs-var">h</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621679050500"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050500"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-48"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><span id="line-85"></span><span class="annot"><a href="Lessons.Lesson05.html#parseLetter"><span class="hs-identifier hs-var">parseLetter</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679058867"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679058867"><span class="hs-identifier hs-var">h</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621679058868"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058868"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isAlpha</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679050499"><span class="hs-identifier hs-var">h</span></a></span><span>
-</span><span id="line-49"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">(Char, [Char]) -&gt; Either ErrorMsg (Char, [Char])
+</span><a href="#local-6989586621679058867"><span class="hs-identifier hs-var">h</span></a></span><span>
+</span><span id="line-87"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">(Char, [Char]) -&gt; Either ErrorMsg (Char, [Char])
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679050499"><span class="hs-identifier hs-var">h</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050500"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-50"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">ErrorMsg -&gt; Either ErrorMsg (Char, [Char])
+</span><a href="#local-6989586621679058867"><span class="hs-identifier hs-var">h</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058868"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-88"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">ErrorMsg -&gt; Either ErrorMsg (Char, [Char])
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">[Char]
 </span><span class="hs-string">&quot;A letter is expected, but got &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; [Char]
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679050499"><span class="hs-identifier hs-var">h</span></a></span><span class="hs-special">]</span><span class="hs-special">]</span><span>
-</span><span id="line-51"></span><span>
-</span><span id="line-52"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString &quot;&quot;</span><span>
-</span><span id="line-53"></span><span class="hs-comment">-- Left [&quot;At least on value required&quot;]</span><span>
-</span><span id="line-54"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString &quot;afds&quot;</span><span>
-</span><span id="line-55"></span><span class="hs-comment">-- Right (&quot;afds&quot;,&quot;&quot;)</span><span>
-</span><span id="line-56"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString &quot;afds5345&quot;</span><span>
-</span><span id="line-57"></span><span class="hs-comment">-- Right (&quot;afds&quot;,&quot;5345&quot;)</span><span>
-</span><span id="line-58"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString &quot;afds 5345&quot;</span><span>
-</span><span id="line-59"></span><span class="hs-comment">-- Right (&quot;afds&quot;,&quot; 5345&quot;)</span><span>
-</span><span id="line-60"></span><span class="annot"><a href="Lessons.Lesson05.html#parseString"><span class="hs-identifier hs-type">parseString</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
-</span><span id="line-61"></span><span id="parseString"><span class="annot"><span class="annottext">parseString :: Parser ErrorMsg [Char]
+</span><a href="#local-6989586621679058867"><span class="hs-identifier hs-var">h</span></a></span><span class="hs-special">]</span><span class="hs-special">]</span><span>
+</span><span id="line-89"></span><span>
+</span><span id="line-90"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString &quot;&quot;</span><span>
+</span><span id="line-91"></span><span class="hs-comment">-- Left [&quot;At least one value required&quot;]</span><span>
+</span><span id="line-92"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString &quot;afds&quot;</span><span>
+</span><span id="line-93"></span><span class="hs-comment">-- Right (&quot;afds&quot;,&quot;&quot;)</span><span>
+</span><span id="line-94"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString &quot;afds5345&quot;</span><span>
+</span><span id="line-95"></span><span class="hs-comment">-- Right (&quot;afds&quot;,&quot;5345&quot;)</span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString &quot;afds 5345&quot;</span><span>
+</span><span id="line-97"></span><span class="hs-comment">-- Right (&quot;afds&quot;,&quot; 5345&quot;)</span><span>
+</span><span id="line-98"></span><span class="hs-comment">-- | 'parseString' attempts to parse a string. It repeatedly attempts to read letters from the start of the input and</span><span>
+</span><span id="line-99"></span><span class="hs-comment">-- succeeds if it is able to find at least one letter. The parser stops upon encountering a non-letter character.</span><span>
+</span><span id="line-100"></span><span class="hs-comment">-- (The setup is again similar to the parser from Lesson 4, but with support to the new ErrorMsg and Parser definitions).</span><span>
+</span><span id="line-101"></span><span class="annot"><a href="Lessons.Lesson05.html#parseString"><span class="hs-identifier hs-type">parseString</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-102"></span><span id="parseString"><span class="annot"><span class="annottext">parseString :: Parser ErrorMsg [Char]
 </span><a href="Lessons.Lesson05.html#parseString"><span class="hs-identifier hs-var hs-var">parseString</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser ErrorMsg Char -&gt; Parser ErrorMsg [Char]
 forall a. Parser ErrorMsg a -&gt; Parser ErrorMsg [a]
 </span><a href="Lessons.Lesson05.html#many1"><span class="hs-identifier hs-var">many1</span></a></span><span> </span><span class="annot"><span class="annottext">Parser ErrorMsg Char
 </span><a href="Lessons.Lesson05.html#parseLetter"><span class="hs-identifier hs-var">parseLetter</span></a></span><span>
-</span><span id="line-62"></span><span>
-</span><span id="line-63"></span><span id="local-6989586621679050443"><span id="local-6989586621679050444"><span class="annot"><a href="Lessons.Lesson05.html#many"><span class="hs-identifier hs-type">many</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050443"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050444"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050443"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679050444"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span></span><span>
-</span><span id="line-64"></span><span id="many"><span class="annot"><span class="annottext">many :: forall e a. Parser e a -&gt; Parser e [a]
-</span><a href="Lessons.Lesson05.html#many"><span class="hs-identifier hs-var hs-var">many</span></a></span></span><span> </span><span id="local-6989586621679050504"><span class="annot"><span class="annottext">Parser e a
-</span><a href="#local-6989586621679050504"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser e a -&gt; [a] -&gt; [Char] -&gt; Either e ([a], [Char])
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="hs-comment">-- | The 'many' parser runs another parser `many'` repeatedly on the input</span><span>
+</span><span id="line-105"></span><span class="hs-comment">-- (similarly to 'many' from Lesson 4, but this time 'Parser' has an additional type parameter).</span><span>
+</span><span id="line-106"></span><span class="hs-comment">-- Note that `many' p' (acc ++ [v]) r` is equivalent to `(many' p' (acc ++ [v])) r`</span><span>
+</span><span id="line-107"></span><span class="hs-comment">-- since many' returns a function which takes 'r' as input.</span><span>
+</span><span id="line-108"></span><span id="local-6989586621679058805"><span id="local-6989586621679058806"><span class="annot"><a href="Lessons.Lesson05.html#many"><span class="hs-identifier hs-type">many</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058805"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058806"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058805"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679058806"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span></span><span>
+</span><span id="line-109"></span><span id="many"><span class="annot"><span class="annottext">many :: forall e a. Parser e a -&gt; Parser e [a]
+</span><a href="Lessons.Lesson05.html#many"><span class="hs-identifier hs-var hs-var">many</span></a></span></span><span> </span><span id="local-6989586621679058872"><span class="annot"><span class="annottext">Parser e a
+</span><a href="#local-6989586621679058872"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser e a -&gt; [a] -&gt; [Char] -&gt; Either e ([a], [Char])
 forall {t} {a} {a} {a}.
 (t -&gt; Either a (a, t)) -&gt; [a] -&gt; t -&gt; Either a ([a], t)
-</span><a href="#local-6989586621679050505"><span class="hs-identifier hs-var">many'</span></a></span><span> </span><span class="annot"><span class="annottext">Parser e a
-</span><a href="#local-6989586621679050504"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
-</span><span id="line-65"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-66"></span><span>    </span><span id="local-6989586621679050505"><span class="annot"><span class="annottext">many' :: (t -&gt; Either a (a, t)) -&gt; [a] -&gt; t -&gt; Either a ([a], t)
-</span><a href="#local-6989586621679050505"><span class="hs-identifier hs-var hs-var">many'</span></a></span></span><span> </span><span id="local-6989586621679050506"><span class="annot"><span class="annottext">t -&gt; Either a (a, t)
-</span><a href="#local-6989586621679050506"><span class="hs-identifier hs-var">p'</span></a></span></span><span> </span><span id="local-6989586621679050507"><span class="annot"><span class="annottext">[a]
-</span><a href="#local-6989586621679050507"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679050508"><span class="annot"><span class="annottext">t
-</span><a href="#local-6989586621679050508"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-67"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">t -&gt; Either a (a, t)
-</span><a href="#local-6989586621679050506"><span class="hs-identifier hs-var">p'</span></a></span><span> </span><span class="annot"><span class="annottext">t
-</span><a href="#local-6989586621679050508"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-68"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679058873"><span class="hs-identifier hs-var">many'</span></a></span><span> </span><span class="annot"><span class="annottext">Parser e a
+</span><a href="#local-6989586621679058872"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-110"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-111"></span><span>    </span><span id="local-6989586621679058873"><span class="annot"><span class="annottext">many' :: (t -&gt; Either a (a, t)) -&gt; [a] -&gt; t -&gt; Either a ([a], t)
+</span><a href="#local-6989586621679058873"><span class="hs-identifier hs-var hs-var">many'</span></a></span></span><span> </span><span id="local-6989586621679058874"><span class="annot"><span class="annottext">t -&gt; Either a (a, t)
+</span><a href="#local-6989586621679058874"><span class="hs-identifier hs-var">p'</span></a></span></span><span> </span><span id="local-6989586621679058875"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679058875"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679058876"><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679058876"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-112"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">t -&gt; Either a (a, t)
+</span><a href="#local-6989586621679058874"><span class="hs-identifier hs-var">p'</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679058876"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-113"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="annot"><span class="annottext">a
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">([a], t) -&gt; Either a ([a], t)
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a]
-</span><a href="#local-6989586621679050507"><span class="hs-identifier hs-var">acc</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">t
-</span><a href="#local-6989586621679050508"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-69"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679050509"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679050509"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679050510"><span class="annot"><span class="annottext">t
-</span><a href="#local-6989586621679050510"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(t -&gt; Either a (a, t)) -&gt; [a] -&gt; t -&gt; Either a ([a], t)
-</span><a href="#local-6989586621679050505"><span class="hs-identifier hs-var">many'</span></a></span><span> </span><span class="annot"><span class="annottext">t -&gt; Either a (a, t)
-</span><a href="#local-6989586621679050506"><span class="hs-identifier hs-var">p'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a]
-</span><a href="#local-6989586621679050507"><span class="hs-identifier hs-var">acc</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a] -&gt; [a]
+</span><a href="#local-6989586621679058875"><span class="hs-identifier hs-var">acc</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679058876"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-114"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679058877"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679058877"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679058878"><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679058878"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(t -&gt; Either a (a, t)) -&gt; [a] -&gt; t -&gt; Either a ([a], t)
+</span><a href="#local-6989586621679058873"><span class="hs-identifier hs-var">many'</span></a></span><span> </span><span class="annot"><span class="annottext">t -&gt; Either a (a, t)
+</span><a href="#local-6989586621679058874"><span class="hs-identifier hs-var">p'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679058875"><span class="hs-identifier hs-var">acc</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a] -&gt; [a]
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679050509"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">t
-</span><a href="#local-6989586621679050510"><span class="hs-identifier hs-var">r</span></a></span><span>
-</span><span id="line-70"></span><span>
-</span><span id="line-71"></span><span id="local-6989586621679050442"><span class="annot"><a href="Lessons.Lesson05.html#many1"><span class="hs-identifier hs-type">many1</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050442"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679050442"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span><span>
-</span><span id="line-72"></span><span id="many1"><span class="annot"><span class="annottext">many1 :: forall a. Parser ErrorMsg a -&gt; Parser ErrorMsg [a]
-</span><a href="Lessons.Lesson05.html#many1"><span class="hs-identifier hs-var hs-var">many1</span></a></span></span><span> </span><span id="local-6989586621679050511"><span class="annot"><span class="annottext">Parser ErrorMsg a
-</span><a href="#local-6989586621679050511"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679050512"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050512"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-73"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser ErrorMsg a -&gt; [Char] -&gt; Either ErrorMsg ([a], [Char])
+</span><a href="#local-6989586621679058877"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679058878"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><span id="line-115"></span><span>
+</span><span id="line-116"></span><span class="hs-comment">-- | The parser 'many1' requires at least one value to be parsed.</span><span>
+</span><span id="line-117"></span><span class="hs-comment">-- Note that 'many p input' is equivalent to '(many p) input' since 'many p' returns a parser.</span><span>
+</span><span id="line-118"></span><span id="local-6989586621679058804"><span class="annot"><a href="Lessons.Lesson05.html#many1"><span class="hs-identifier hs-type">many1</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058804"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679058804"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span><span>
+</span><span id="line-119"></span><span id="many1"><span class="annot"><span class="annottext">many1 :: forall a. Parser ErrorMsg a -&gt; Parser ErrorMsg [a]
+</span><a href="Lessons.Lesson05.html#many1"><span class="hs-identifier hs-var hs-var">many1</span></a></span></span><span> </span><span id="local-6989586621679058879"><span class="annot"><span class="annottext">Parser ErrorMsg a
+</span><a href="#local-6989586621679058879"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679058880"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058880"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-120"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser ErrorMsg a -&gt; [Char] -&gt; Either ErrorMsg ([a], [Char])
 forall e a. Parser e a -&gt; Parser e [a]
 </span><a href="Lessons.Lesson05.html#many"><span class="hs-identifier hs-var">many</span></a></span><span> </span><span class="annot"><span class="annottext">Parser ErrorMsg a
-</span><a href="#local-6989586621679050511"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050512"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-74"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679050513"><span class="annot"><span class="annottext">ErrorMsg
-</span><a href="#local-6989586621679050513"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ErrorMsg -&gt; Either ErrorMsg ([a], [Char])
+</span><a href="#local-6989586621679058879"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058880"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-121"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679058881"><span class="annot"><span class="annottext">ErrorMsg
+</span><a href="#local-6989586621679058881"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ErrorMsg -&gt; Either ErrorMsg ([a], [Char])
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">ErrorMsg
-</span><a href="#local-6989586621679050513"><span class="hs-identifier hs-var">e</span></a></span><span>
-</span><span id="line-75"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058881"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-122"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Char]
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ErrorMsg -&gt; Either ErrorMsg ([a], [Char])
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">[Char]
-</span><span class="hs-string">&quot;At least on value required&quot;</span></span><span class="hs-special">]</span><span>
-</span><span id="line-76"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679050514"><span class="annot"><span class="annottext">([a], [Char])
-</span><a href="#local-6989586621679050514"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">([a], [Char]) -&gt; Either ErrorMsg ([a], [Char])
+</span><span class="hs-string">&quot;At least one value required&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-123"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679058882"><span class="annot"><span class="annottext">([a], [Char])
+</span><a href="#local-6989586621679058882"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">([a], [Char]) -&gt; Either ErrorMsg ([a], [Char])
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">([a], [Char])
-</span><a href="#local-6989586621679050514"><span class="hs-identifier hs-var">a</span></a></span><span>
-</span><span id="line-77"></span><span>
-</span><span id="line-78"></span><span id="local-6989586621679050453"><span id="local-6989586621679050454"><span id="local-6989586621679050455"><span class="annot"><a href="Lessons.Lesson05.html#pmap"><span class="hs-identifier hs-type">pmap</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679050453"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679050454"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050455"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050453"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050455"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050454"><span class="hs-identifier hs-type">b</span></a></span></span></span></span><span>
-</span><span id="line-79"></span><span id="pmap"><span class="annot"><span class="annottext">pmap :: forall a b e. (a -&gt; b) -&gt; Parser e a -&gt; Parser e b
-</span><a href="Lessons.Lesson05.html#pmap"><span class="hs-identifier hs-var hs-var">pmap</span></a></span></span><span> </span><span id="local-6989586621679050516"><span class="annot"><span class="annottext">a -&gt; b
-</span><a href="#local-6989586621679050516"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679050517"><span class="annot"><span class="annottext">Parser e a
-</span><a href="#local-6989586621679050517"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679050518"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050518"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-80"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser e a
-</span><a href="#local-6989586621679050517"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050518"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-81"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679050519"><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621679050519"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">e -&gt; Either e (b, [Char])
+</span><a href="#local-6989586621679058882"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-124"></span><span>
+</span><span id="line-125"></span><span class="hs-comment">-- | 'pmap' maps a parser which parses values of type 'a' to a parser which parses values of type 'b' using a given function 'f'.</span><span>
+</span><span id="line-126"></span><span class="hs-comment">-- The function does not map Left values (error messages); only the parsed values of Right are affected.</span><span>
+</span><span id="line-127"></span><span class="hs-comment">-- If the parser p parses a Right value 'Right (v, r)', it gets mapped to 'Right (f v, r)'.</span><span>
+</span><span id="line-128"></span><span id="local-6989586621679058815"><span id="local-6989586621679058816"><span id="local-6989586621679058817"><span class="annot"><a href="Lessons.Lesson05.html#pmap"><span class="hs-identifier hs-type">pmap</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679058815"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679058816"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058817"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058815"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058817"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058816"><span class="hs-identifier hs-type">b</span></a></span></span></span></span><span>
+</span><span id="line-129"></span><span id="pmap"><span class="annot"><span class="annottext">pmap :: forall a b e. (a -&gt; b) -&gt; Parser e a -&gt; Parser e b
+</span><a href="Lessons.Lesson05.html#pmap"><span class="hs-identifier hs-var hs-var">pmap</span></a></span></span><span> </span><span id="local-6989586621679058884"><span class="annot"><span class="annottext">a -&gt; b
+</span><a href="#local-6989586621679058884"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679058885"><span class="annot"><span class="annottext">Parser e a
+</span><a href="#local-6989586621679058885"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679058886"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058886"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-130"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser e a
+</span><a href="#local-6989586621679058885"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058886"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-131"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679058887"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679058887"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">e -&gt; Either e (b, [Char])
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621679050519"><span class="hs-identifier hs-var">e</span></a></span><span>
-</span><span id="line-82"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679050520"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679050520"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679050521"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050521"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(b, [Char]) -&gt; Either e (b, [Char])
+</span><a href="#local-6989586621679058887"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-132"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679058888"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679058888"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679058889"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058889"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(b, [Char]) -&gt; Either e (b, [Char])
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; b
-</span><a href="#local-6989586621679050516"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679050520"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050521"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-83"></span><span>
-</span><span id="line-84"></span><span class="hs-keyword">data</span><span> </span><span id="Food"><span class="annot"><a href="Lessons.Lesson05.html#Food"><span class="hs-identifier hs-var">Food</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Pizza"><span class="annot"><a href="Lessons.Lesson05.html#Pizza"><span class="hs-identifier hs-var">Pizza</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Sushi"><span class="annot"><a href="Lessons.Lesson05.html#Sushi"><span class="hs-identifier hs-var">Sushi</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Custom"><span class="annot"><a href="Lessons.Lesson05.html#Custom"><span class="hs-identifier hs-var">Custom</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679050526"><span id="local-6989586621679050533"><span id="local-6989586621679050537"><span class="annot"><span class="annottext">Int -&gt; Food -&gt; [Char] -&gt; [Char]
+</span><a href="#local-6989586621679058884"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679058888"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058889"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-133"></span><span>
+</span><span id="line-134"></span><span class="annot"><span class="hs-comment">-- | Here we define an algebraic data type 'Food'. Clearly, the most important foods are Pizza and Sushi; the rest can be described by a Custom String.</span></span><span>
+</span><span id="line-135"></span><span class="hs-keyword">data</span><span> </span><span id="Food"><span class="annot"><a href="Lessons.Lesson05.html#Food"><span class="hs-identifier hs-var">Food</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Pizza"><span class="annot"><a href="Lessons.Lesson05.html#Pizza"><span class="hs-identifier hs-var">Pizza</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Sushi"><span class="annot"><a href="Lessons.Lesson05.html#Sushi"><span class="hs-identifier hs-var">Sushi</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Custom"><span class="annot"><a href="Lessons.Lesson05.html#Custom"><span class="hs-identifier hs-var">Custom</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679058894"><span id="local-6989586621679058901"><span id="local-6989586621679058905"><span class="annot"><span class="annottext">Int -&gt; Food -&gt; [Char] -&gt; [Char]
 [Food] -&gt; [Char] -&gt; [Char]
 Food -&gt; [Char]
 (Int -&gt; Food -&gt; [Char] -&gt; [Char])
@@ -181,124 +232,140 @@ show :: Food -&gt; [Char]
 $cshowList :: [Food] -&gt; [Char] -&gt; [Char]
 showList :: [Food] -&gt; [Char] -&gt; [Char]
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
-</span><span id="line-85"></span><span>
-</span><span id="line-86"></span><span id="local-6989586621679050462"><span id="local-6989586621679050463"><span class="annot"><a href="Lessons.Lesson05.html#orElse"><span class="hs-identifier hs-type">orElse</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Semigroup</span></span><span> </span><span class="annot"><a href="#local-6989586621679050462"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050462"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050463"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050462"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050463"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050462"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050463"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
-</span><span id="line-87"></span><span id="orElse"><span class="annot"><span class="annottext">orElse :: forall e a. Semigroup e =&gt; Parser e a -&gt; Parser e a -&gt; Parser e a
-</span><a href="Lessons.Lesson05.html#orElse"><span class="hs-identifier hs-var hs-var">orElse</span></a></span></span><span> </span><span id="local-6989586621679050544"><span class="annot"><span class="annottext">Parser e a
-</span><a href="#local-6989586621679050544"><span class="hs-identifier hs-var">p1</span></a></span></span><span> </span><span id="local-6989586621679050545"><span class="annot"><span class="annottext">Parser e a
-</span><a href="#local-6989586621679050545"><span class="hs-identifier hs-var">p2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679050546"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050546"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-88"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser e a
-</span><a href="#local-6989586621679050544"><span class="hs-identifier hs-var">p1</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050546"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-89"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679050547"><span class="annot"><span class="annottext">(a, [Char])
-</span><a href="#local-6989586621679050547"><span class="hs-identifier hs-var">r1</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(a, [Char]) -&gt; Either e (a, [Char])
+</span><span id="line-136"></span><span>
+</span><span id="line-137"></span><span class="hs-comment">-- | A semigroup is a set equipped with a binary operation satisfying the closure and associativity properties.</span><span>
+</span><span id="line-138"></span><span class="hs-comment">-- You can think of it as a Monoid that does not necessarily have an identity element.</span><span>
+</span><span id="line-139"></span><span class="hs-comment">-- | orElse is a function combining two parsers into one.</span><span>
+</span><span id="line-140"></span><span class="hs-comment">-- Given two parsers 'p1' and 'p2':</span><span>
+</span><span id="line-141"></span><span class="hs-comment">-- 'orElse' returns 'Right r1', if 'p1' parses the input given to the combined parser as a 'Right' type with value 'r1'</span><span>
+</span><span id="line-142"></span><span class="hs-comment">-- Otherwise, 'orElse' returns 'Right r2' if 'p2' parses the input given to the combined parser as a 'Right' type with value 'r2'</span><span>
+</span><span id="line-143"></span><span class="hs-comment">-- Otherwise, 'orElse' returns 'Left $ e1 &lt;&gt; e2' where '&lt;&gt;' is an alias for 'mappend'.</span><span>
+</span><span id="line-144"></span><span class="hs-comment">-- So basically, 'orElse' takes the output of the first parser which parses the input, or returns an error if no parser can process the input.</span><span>
+</span><span id="line-145"></span><span id="local-6989586621679058824"><span id="local-6989586621679058825"><span class="annot"><a href="Lessons.Lesson05.html#orElse"><span class="hs-identifier hs-type">orElse</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Semigroup</span></span><span> </span><span class="annot"><a href="#local-6989586621679058824"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058824"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058825"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058824"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058825"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058824"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058825"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
+</span><span id="line-146"></span><span id="orElse"><span class="annot"><span class="annottext">orElse :: forall e a. Semigroup e =&gt; Parser e a -&gt; Parser e a -&gt; Parser e a
+</span><a href="Lessons.Lesson05.html#orElse"><span class="hs-identifier hs-var hs-var">orElse</span></a></span></span><span> </span><span id="local-6989586621679058912"><span class="annot"><span class="annottext">Parser e a
+</span><a href="#local-6989586621679058912"><span class="hs-identifier hs-var">p1</span></a></span></span><span> </span><span id="local-6989586621679058913"><span class="annot"><span class="annottext">Parser e a
+</span><a href="#local-6989586621679058913"><span class="hs-identifier hs-var">p2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679058914"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058914"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-147"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser e a
+</span><a href="#local-6989586621679058912"><span class="hs-identifier hs-var">p1</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058914"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-148"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679058915"><span class="annot"><span class="annottext">(a, [Char])
+</span><a href="#local-6989586621679058915"><span class="hs-identifier hs-var">r1</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(a, [Char]) -&gt; Either e (a, [Char])
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">(a, [Char])
-</span><a href="#local-6989586621679050547"><span class="hs-identifier hs-var">r1</span></a></span><span>
-</span><span id="line-90"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679050548"><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621679050548"><span class="hs-identifier hs-var">e1</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-91"></span><span>            </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser e a
-</span><a href="#local-6989586621679050545"><span class="hs-identifier hs-var">p2</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050546"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-92"></span><span>                </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679050549"><span class="annot"><span class="annottext">(a, [Char])
-</span><a href="#local-6989586621679050549"><span class="hs-identifier hs-var">r2</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(a, [Char]) -&gt; Either e (a, [Char])
+</span><a href="#local-6989586621679058915"><span class="hs-identifier hs-var">r1</span></a></span><span>
+</span><span id="line-149"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679058916"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679058916"><span class="hs-identifier hs-var">e1</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-150"></span><span>            </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser e a
+</span><a href="#local-6989586621679058913"><span class="hs-identifier hs-var">p2</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058914"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-151"></span><span>                </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679058917"><span class="annot"><span class="annottext">(a, [Char])
+</span><a href="#local-6989586621679058917"><span class="hs-identifier hs-var">r2</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(a, [Char]) -&gt; Either e (a, [Char])
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">(a, [Char])
-</span><a href="#local-6989586621679050549"><span class="hs-identifier hs-var">r2</span></a></span><span>
-</span><span id="line-93"></span><span>                </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679050550"><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621679050550"><span class="hs-identifier hs-var">e2</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">e -&gt; Either e (a, [Char])
+</span><a href="#local-6989586621679058917"><span class="hs-identifier hs-var">r2</span></a></span><span>
+</span><span id="line-152"></span><span>                </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679058918"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679058918"><span class="hs-identifier hs-var">e2</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">e -&gt; Either e (a, [Char])
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(e -&gt; Either e (a, [Char])) -&gt; e -&gt; Either e (a, [Char])
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621679050548"><span class="hs-identifier hs-var">e1</span></a></span><span> </span><span class="annot"><span class="annottext">e -&gt; e -&gt; e
+</span><a href="#local-6989586621679058916"><span class="hs-identifier hs-var">e1</span></a></span><span> </span><span class="annot"><span class="annottext">e -&gt; e -&gt; e
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621679050550"><span class="hs-identifier hs-var">e2</span></a></span><span>
-</span><span id="line-94"></span><span>
-</span><span id="line-95"></span><span id="local-6989586621679050470"><span id="local-6989586621679050471"><span id="local-6989586621679050472"><span id="local-6989586621679050473"><span class="annot"><a href="Lessons.Lesson05.html#and3"><span class="hs-identifier hs-type">and3</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050470"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050471"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050470"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050472"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050470"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050473"><span class="hs-identifier hs-type">c</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679050470"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679050471"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679050472"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679050473"><span class="hs-identifier hs-type">c</span></a></span><span class="hs-special">)</span></span></span></span></span><span>
-</span><span id="line-96"></span><span id="and3"><span class="annot"><span class="annottext">and3 :: forall e a b c.
+</span><a href="#local-6989586621679058918"><span class="hs-identifier hs-var">e2</span></a></span><span>
+</span><span id="line-153"></span><span>
+</span><span id="line-154"></span><span class="hs-comment">-- | and3 is a function combining three parsers into one.</span><span>
+</span><span id="line-155"></span><span class="hs-comment">-- It attempts to parse the input using three parsers in a row, with each parser receiving the remaining unparsed text as input.</span><span>
+</span><span id="line-156"></span><span class="hs-comment">-- If any parser returns an error, the combined parser returns an error as well.</span><span>
+</span><span id="line-157"></span><span class="hs-comment">-- If all three parsers successfully parse the input, a tuple of parsed values '(v1, v2, v3)' is returned as a Right value.</span><span>
+</span><span id="line-158"></span><span id="local-6989586621679058832"><span id="local-6989586621679058833"><span id="local-6989586621679058834"><span id="local-6989586621679058835"><span class="annot"><a href="Lessons.Lesson05.html#and3"><span class="hs-identifier hs-type">and3</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058832"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058833"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058832"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058834"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058832"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058835"><span class="hs-identifier hs-type">c</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679058832"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679058833"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679058834"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679058835"><span class="hs-identifier hs-type">c</span></a></span><span class="hs-special">)</span></span></span></span></span><span>
+</span><span id="line-159"></span><span id="and3"><span class="annot"><span class="annottext">and3 :: forall e a b c.
 Parser e a -&gt; Parser e b -&gt; Parser e c -&gt; Parser e (a, b, c)
-</span><a href="Lessons.Lesson05.html#and3"><span class="hs-identifier hs-var hs-var">and3</span></a></span></span><span> </span><span id="local-6989586621679050552"><span class="annot"><span class="annottext">Parser e a
-</span><a href="#local-6989586621679050552"><span class="hs-identifier hs-var">p1</span></a></span></span><span> </span><span id="local-6989586621679050553"><span class="annot"><span class="annottext">Parser e b
-</span><a href="#local-6989586621679050553"><span class="hs-identifier hs-var">p2</span></a></span></span><span> </span><span id="local-6989586621679050554"><span class="annot"><span class="annottext">Parser e c
-</span><a href="#local-6989586621679050554"><span class="hs-identifier hs-var">p3</span></a></span></span><span> </span><span id="local-6989586621679050555"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050555"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-97"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser e a
-</span><a href="#local-6989586621679050552"><span class="hs-identifier hs-var">p1</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050555"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-98"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679050556"><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621679050556"><span class="hs-identifier hs-var">e1</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">e -&gt; Either e ((a, b, c), [Char])
+</span><a href="Lessons.Lesson05.html#and3"><span class="hs-identifier hs-var hs-var">and3</span></a></span></span><span> </span><span id="local-6989586621679058920"><span class="annot"><span class="annottext">Parser e a
+</span><a href="#local-6989586621679058920"><span class="hs-identifier hs-var">p1</span></a></span></span><span> </span><span id="local-6989586621679058921"><span class="annot"><span class="annottext">Parser e b
+</span><a href="#local-6989586621679058921"><span class="hs-identifier hs-var">p2</span></a></span></span><span> </span><span id="local-6989586621679058922"><span class="annot"><span class="annottext">Parser e c
+</span><a href="#local-6989586621679058922"><span class="hs-identifier hs-var">p3</span></a></span></span><span> </span><span id="local-6989586621679058923"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058923"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-160"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser e a
+</span><a href="#local-6989586621679058920"><span class="hs-identifier hs-var">p1</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058923"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-161"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679058924"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679058924"><span class="hs-identifier hs-var">e1</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">e -&gt; Either e ((a, b, c), [Char])
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621679050556"><span class="hs-identifier hs-var">e1</span></a></span><span>
-</span><span id="line-99"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679050557"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679050557"><span class="hs-identifier hs-var">v1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679050558"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050558"><span class="hs-identifier hs-var">r1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-100"></span><span>            </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser e b
-</span><a href="#local-6989586621679050553"><span class="hs-identifier hs-var">p2</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050558"><span class="hs-identifier hs-var">r1</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-101"></span><span>                </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679050559"><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621679050559"><span class="hs-identifier hs-var">e2</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">e -&gt; Either e ((a, b, c), [Char])
+</span><a href="#local-6989586621679058924"><span class="hs-identifier hs-var">e1</span></a></span><span>
+</span><span id="line-162"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679058925"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679058925"><span class="hs-identifier hs-var">v1</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679058926"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058926"><span class="hs-identifier hs-var">r1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-163"></span><span>            </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser e b
+</span><a href="#local-6989586621679058921"><span class="hs-identifier hs-var">p2</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058926"><span class="hs-identifier hs-var">r1</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-164"></span><span>                </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679058927"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679058927"><span class="hs-identifier hs-var">e2</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">e -&gt; Either e ((a, b, c), [Char])
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621679050559"><span class="hs-identifier hs-var">e2</span></a></span><span>
-</span><span id="line-102"></span><span>                </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679050560"><span class="annot"><span class="annottext">b
-</span><a href="#local-6989586621679050560"><span class="hs-identifier hs-var">v2</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679050561"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050561"><span class="hs-identifier hs-var">r2</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-103"></span><span>                    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser e c
-</span><a href="#local-6989586621679050554"><span class="hs-identifier hs-var">p3</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050561"><span class="hs-identifier hs-var">r2</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-104"></span><span>                        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679050562"><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621679050562"><span class="hs-identifier hs-var">e3</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">e -&gt; Either e ((a, b, c), [Char])
+</span><a href="#local-6989586621679058927"><span class="hs-identifier hs-var">e2</span></a></span><span>
+</span><span id="line-165"></span><span>                </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679058928"><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679058928"><span class="hs-identifier hs-var">v2</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679058929"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058929"><span class="hs-identifier hs-var">r2</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-166"></span><span>                    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Parser e c
+</span><a href="#local-6989586621679058922"><span class="hs-identifier hs-var">p3</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058929"><span class="hs-identifier hs-var">r2</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-167"></span><span>                        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679058930"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679058930"><span class="hs-identifier hs-var">e3</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">e -&gt; Either e ((a, b, c), [Char])
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621679050562"><span class="hs-identifier hs-var">e3</span></a></span><span>
-</span><span id="line-105"></span><span>                        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679050563"><span class="annot"><span class="annottext">c
-</span><a href="#local-6989586621679050563"><span class="hs-identifier hs-var">v3</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679050564"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050564"><span class="hs-identifier hs-var">r3</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">((a, b, c), [Char]) -&gt; Either e ((a, b, c), [Char])
+</span><a href="#local-6989586621679058930"><span class="hs-identifier hs-var">e3</span></a></span><span>
+</span><span id="line-168"></span><span>                        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679058931"><span class="annot"><span class="annottext">c
+</span><a href="#local-6989586621679058931"><span class="hs-identifier hs-var">v3</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679058932"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058932"><span class="hs-identifier hs-var">r3</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">((a, b, c), [Char]) -&gt; Either e ((a, b, c), [Char])
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679050557"><span class="hs-identifier hs-var">v1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">b
-</span><a href="#local-6989586621679050560"><span class="hs-identifier hs-var">v2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">c
-</span><a href="#local-6989586621679050563"><span class="hs-identifier hs-var">v3</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050564"><span class="hs-identifier hs-var">r3</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-106"></span><span>
-</span><span id="line-107"></span><span class="annot"><a href="Lessons.Lesson05.html#keyword"><span class="hs-identifier hs-type">keyword</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
-</span><span id="line-108"></span><span id="keyword"><span class="annot"><span class="annottext">keyword :: [Char] -&gt; Parser ErrorMsg [Char]
-</span><a href="Lessons.Lesson05.html#keyword"><span class="hs-identifier hs-var hs-var">keyword</span></a></span></span><span> </span><span id="local-6989586621679050566"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050566"><span class="hs-identifier hs-var">prefix</span></a></span></span><span> </span><span id="local-6989586621679050567"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050567"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-109"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050566"><span class="hs-identifier hs-var">prefix</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; Bool
+</span><a href="#local-6989586621679058925"><span class="hs-identifier hs-var">v1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679058928"><span class="hs-identifier hs-var">v2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">c
+</span><a href="#local-6989586621679058931"><span class="hs-identifier hs-var">v3</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058932"><span class="hs-identifier hs-var">r3</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-169"></span><span class="hs-comment">-- | Expanding the definition of 'Parser', we see that keyword :: String -&gt; String -&gt; Either ErrorMsg (String, String)</span><span>
+</span><span id="line-170"></span><span class="hs-comment">-- Hence 'keyword' can be understood as a function which takes in two strings and returns an Either (by function associativity).</span><span>
+</span><span id="line-171"></span><span class="hs-comment">-- It checks if a given prefix is a prefix of the input being parsed and returns a Right value with the prefix and remaining input if this is the case.</span><span>
+</span><span id="line-172"></span><span class="hs-comment">-- Otherwise, it returns a Left value (a list containing an error message).</span><span>
+</span><span id="line-173"></span><span class="annot"><a href="Lessons.Lesson05.html#keyword"><span class="hs-identifier hs-type">keyword</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-174"></span><span id="keyword"><span class="annot"><span class="annottext">keyword :: [Char] -&gt; Parser ErrorMsg [Char]
+</span><a href="Lessons.Lesson05.html#keyword"><span class="hs-identifier hs-var hs-var">keyword</span></a></span></span><span> </span><span id="local-6989586621679058934"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058934"><span class="hs-identifier hs-var">prefix</span></a></span></span><span> </span><span id="local-6989586621679058935"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058935"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-175"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058934"><span class="hs-identifier hs-var">prefix</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; Bool
 forall a. Eq a =&gt; [a] -&gt; [a] -&gt; Bool
 </span><span class="hs-operator hs-var">`isPrefixOf`</span></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050567"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">then</span><span>
-</span><span id="line-110"></span><span>        </span><span class="annot"><span class="annottext">([Char], [Char]) -&gt; Either ErrorMsg ([Char], [Char])
+</span><a href="#local-6989586621679058935"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">then</span><span>
+</span><span id="line-176"></span><span>        </span><span class="annot"><span class="annottext">([Char], [Char]) -&gt; Either ErrorMsg ([Char], [Char])
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050566"><span class="hs-identifier hs-var">prefix</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Char] -&gt; [Char]
+</span><a href="#local-6989586621679058934"><span class="hs-identifier hs-var">prefix</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Char] -&gt; [Char]
 forall a. Int -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">drop</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Char] -&gt; Int
 forall a. [a] -&gt; Int
 forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
 </span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050566"><span class="hs-identifier hs-var">prefix</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050567"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-111"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">ErrorMsg -&gt; Either ErrorMsg ([Char], [Char])
+</span><a href="#local-6989586621679058934"><span class="hs-identifier hs-var">prefix</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058935"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-177"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">ErrorMsg -&gt; Either ErrorMsg ([Char], [Char])
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050566"><span class="hs-identifier hs-var">prefix</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; [Char]
+</span><a href="#local-6989586621679058934"><span class="hs-identifier hs-var">prefix</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; [Char]
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">[Char]
 </span><span class="hs-string">&quot; is expected, got &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; [Char]
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050567"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">]</span><span>
-</span><span id="line-112"></span><span>
-</span><span id="line-113"></span><span class="annot"><a href="Lessons.Lesson05.html#ws"><span class="hs-identifier hs-type">ws</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">]</span><span>
-</span><span id="line-114"></span><span id="ws"><span class="annot"><span class="annottext">ws :: Parser ErrorMsg ErrorMsg
+</span><a href="#local-6989586621679058935"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-178"></span><span>
+</span><span id="line-179"></span><span class="annot"><span class="hs-comment">-- | 'ws' parses whitespace (tab or space) characters (at least one) using 'keyword' and 'orElse'.</span></span><span>
+</span><span id="line-180"></span><span class="annot"><a href="Lessons.Lesson05.html#ws"><span class="hs-identifier hs-type">ws</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">]</span><span>
+</span><span id="line-181"></span><span id="ws"><span class="annot"><span class="annottext">ws :: Parser ErrorMsg ErrorMsg
 </span><a href="Lessons.Lesson05.html#ws"><span class="hs-identifier hs-var hs-var">ws</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser ErrorMsg [Char] -&gt; Parser ErrorMsg ErrorMsg
 forall a. Parser ErrorMsg a -&gt; Parser ErrorMsg [a]
 </span><a href="Lessons.Lesson05.html#many1"><span class="hs-identifier hs-var">many1</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Char] -&gt; Parser ErrorMsg [Char]
@@ -309,9 +376,13 @@ forall e a. Semigroup e =&gt; Parser e a -&gt; Parser e a -&gt; Parser e a
 </span><a href="Lessons.Lesson05.html#orElse"><span class="hs-operator hs-var">`orElse`</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Parser ErrorMsg [Char]
 </span><a href="Lessons.Lesson05.html#keyword"><span class="hs-identifier hs-var">keyword</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
 </span><span class="hs-string">&quot;\t&quot;</span></span><span class="hs-special">)</span><span>
-</span><span id="line-115"></span><span>
-</span><span id="line-116"></span><span class="annot"><a href="Lessons.Lesson05.html#parsePizza"><span class="hs-identifier hs-type">parsePizza</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Food"><span class="hs-identifier hs-type">Food</span></a></span><span>
-</span><span id="line-117"></span><span id="parsePizza"><span class="annot"><span class="annottext">parsePizza :: Parser ErrorMsg Food
+</span><span id="line-182"></span><span>
+</span><span id="line-183"></span><span class="hs-comment">-- | 'const x y' always evaluates to 'x'.</span><span>
+</span><span id="line-184"></span><span class="hs-comment">-- | 'parsePizza' returns a parser which returns a Right value whenever the input text starts with &quot;pizza&quot;.</span><span>
+</span><span id="line-185"></span><span class="hs-comment">-- Due to the parser map applied on the 'keyword &quot;pizza&quot;' function, the value of Right gets replaced by</span><span>
+</span><span id="line-186"></span><span class="hs-comment">-- the actual Pizza (of type Food) (so &quot;pizza&quot; becomes Pizza).</span><span>
+</span><span id="line-187"></span><span class="annot"><a href="Lessons.Lesson05.html#parsePizza"><span class="hs-identifier hs-type">parsePizza</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Food"><span class="hs-identifier hs-type">Food</span></a></span><span>
+</span><span id="line-188"></span><span id="parsePizza"><span class="annot"><span class="annottext">parsePizza :: Parser ErrorMsg Food
 </span><a href="Lessons.Lesson05.html#parsePizza"><span class="hs-identifier hs-var hs-var">parsePizza</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; Food) -&gt; Parser ErrorMsg [Char] -&gt; Parser ErrorMsg Food
 forall a b e. (a -&gt; b) -&gt; Parser e a -&gt; Parser e b
 </span><a href="Lessons.Lesson05.html#pmap"><span class="hs-identifier hs-var">pmap</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Food -&gt; [Char] -&gt; Food
@@ -323,9 +394,10 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Parser ErrorMsg [Char]
 </span><a href="Lessons.Lesson05.html#keyword"><span class="hs-identifier hs-var">keyword</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
 </span><span class="hs-string">&quot;pizza&quot;</span></span><span>
-</span><span id="line-118"></span><span>
-</span><span id="line-119"></span><span class="annot"><a href="Lessons.Lesson05.html#parseSushi"><span class="hs-identifier hs-type">parseSushi</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Food"><span class="hs-identifier hs-type">Food</span></a></span><span>
-</span><span id="line-120"></span><span id="parseSushi"><span class="annot"><span class="annottext">parseSushi :: Parser ErrorMsg Food
+</span><span id="line-189"></span><span>
+</span><span id="line-190"></span><span class="annot"><span class="hs-comment">-- | parseSushi works very similarly to 'parsePizza', but for sushi instead.</span></span><span>
+</span><span id="line-191"></span><span class="annot"><a href="Lessons.Lesson05.html#parseSushi"><span class="hs-identifier hs-type">parseSushi</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Food"><span class="hs-identifier hs-type">Food</span></a></span><span>
+</span><span id="line-192"></span><span id="parseSushi"><span class="annot"><span class="annottext">parseSushi :: Parser ErrorMsg Food
 </span><a href="Lessons.Lesson05.html#parseSushi"><span class="hs-identifier hs-var hs-var">parseSushi</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; Food) -&gt; Parser ErrorMsg [Char] -&gt; Parser ErrorMsg Food
 forall a b e. (a -&gt; b) -&gt; Parser e a -&gt; Parser e b
 </span><a href="Lessons.Lesson05.html#pmap"><span class="hs-identifier hs-var">pmap</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Food -&gt; [Char] -&gt; Food
@@ -337,19 +409,21 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Parser ErrorMsg [Char]
 </span><a href="Lessons.Lesson05.html#keyword"><span class="hs-identifier hs-var">keyword</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
 </span><span class="hs-string">&quot;sushi&quot;</span></span><span>
-</span><span id="line-121"></span><span>
-</span><span id="line-122"></span><span class="annot"><a href="Lessons.Lesson05.html#parseCustom"><span class="hs-identifier hs-type">parseCustom</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Food"><span class="hs-identifier hs-type">Food</span></a></span><span>
-</span><span id="line-123"></span><span id="parseCustom"><span class="annot"><span class="annottext">parseCustom :: Parser ErrorMsg Food
+</span><span id="line-193"></span><span>
+</span><span id="line-194"></span><span class="hs-comment">-- | parseCustom parses a string of the form &quot;custom &lt;whitespace&gt; &lt;string&gt;&quot; using a combined 'and3' parser.</span><span>
+</span><span id="line-195"></span><span class="hs-comment">-- This output of this parser gets mapped to a Custom food output using 'pmap'.</span><span>
+</span><span id="line-196"></span><span class="annot"><a href="Lessons.Lesson05.html#parseCustom"><span class="hs-identifier hs-type">parseCustom</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Food"><span class="hs-identifier hs-type">Food</span></a></span><span>
+</span><span id="line-197"></span><span id="parseCustom"><span class="annot"><span class="annottext">parseCustom :: Parser ErrorMsg Food
 </span><a href="Lessons.Lesson05.html#parseCustom"><span class="hs-identifier hs-var hs-var">parseCustom</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(([Char], ErrorMsg, [Char]) -&gt; Food)
 -&gt; Parser ErrorMsg ([Char], ErrorMsg, [Char])
 -&gt; Parser ErrorMsg Food
 forall a b e. (a -&gt; b) -&gt; Parser e a -&gt; Parser e b
 </span><a href="Lessons.Lesson05.html#pmap"><span class="hs-identifier hs-var">pmap</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Char]
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ErrorMsg
-</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679050575"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050575"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Food
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679058943"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679058943"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Food
 </span><a href="Lessons.Lesson05.html#Custom"><span class="hs-identifier hs-var">Custom</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679050575"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Parser ErrorMsg ([Char], ErrorMsg, [Char])
+</span><a href="#local-6989586621679058943"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Parser ErrorMsg ([Char], ErrorMsg, [Char])
  -&gt; Parser ErrorMsg Food)
 -&gt; Parser ErrorMsg ([Char], ErrorMsg, [Char])
 -&gt; Parser ErrorMsg Food
@@ -365,20 +439,24 @@ Parser e a -&gt; Parser e b -&gt; Parser e c -&gt; Parser e (a, b, c)
 </span><span class="hs-string">&quot;custom&quot;</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Parser ErrorMsg ErrorMsg
 </span><a href="Lessons.Lesson05.html#ws"><span class="hs-identifier hs-var">ws</span></a></span><span> </span><span class="annot"><span class="annottext">Parser ErrorMsg [Char]
 </span><a href="Lessons.Lesson05.html#parseString"><span class="hs-identifier hs-var">parseString</span></a></span><span>
-</span><span id="line-124"></span><span>
-</span><span id="line-125"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFood &quot;pizza fdsf&quot;</span><span>
-</span><span id="line-126"></span><span class="hs-comment">-- Right (Pizza,&quot; fdsf&quot;)</span><span>
-</span><span id="line-127"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFood &quot;sushi&quot;</span><span>
-</span><span id="line-128"></span><span class="hs-comment">-- Right (Sushi,&quot;&quot;)</span><span>
-</span><span id="line-129"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFood &quot;custom buritto &quot;</span><span>
-</span><span id="line-130"></span><span class="hs-comment">-- Right (Custom &quot;buritto&quot;,&quot; &quot;)</span><span>
-</span><span id="line-131"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFood &quot;customburitto &quot;</span><span>
-</span><span id="line-132"></span><span class="hs-comment">-- Left [&quot;pizza is expected, got customburitto &quot;,&quot;sushi is expected, got customburitto &quot;,&quot;At least on value required&quot;]</span><span>
-</span><span id="line-133"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFood &quot;custom   &quot;</span><span>
-</span><span id="line-134"></span><span class="hs-comment">-- Left [&quot;pizza is expected, got custom   &quot;,&quot;sushi is expected, got custom   &quot;,&quot;At least on value required&quot;]</span><span>
-</span><span id="line-135"></span><span class="annot"><a href="Lessons.Lesson05.html#parseFood"><span class="hs-identifier hs-type">parseFood</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Food"><span class="hs-identifier hs-type">Food</span></a></span><span>
-</span><span id="line-136"></span><span class="hs-comment">-- orElse (orElse parsePizza parseSushi) parseCustom</span><span>
-</span><span id="line-137"></span><span id="parseFood"><span class="annot"><span class="annottext">parseFood :: Parser ErrorMsg Food
+</span><span id="line-198"></span><span>
+</span><span id="line-199"></span><span class="hs-comment">-- | parseFood parses a food item using the `orElse` function to combine multiple parsers into one.</span><span>
+</span><span id="line-200"></span><span class="hs-comment">-- Some examples:</span><span>
+</span><span id="line-201"></span><span class="hs-comment">--</span><span>
+</span><span id="line-202"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFood &quot;pizza fdsf&quot;</span><span>
+</span><span id="line-203"></span><span class="hs-comment">-- Right (Pizza,&quot; fdsf&quot;)</span><span>
+</span><span id="line-204"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFood &quot;sushi&quot;</span><span>
+</span><span id="line-205"></span><span class="hs-comment">-- Right (Sushi,&quot;&quot;)</span><span>
+</span><span id="line-206"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFood &quot;custom buritto &quot;</span><span>
+</span><span id="line-207"></span><span class="hs-comment">-- Right (Custom &quot;buritto&quot;,&quot; &quot;)</span><span>
+</span><span id="line-208"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFood &quot;customburitto &quot;</span><span>
+</span><span id="line-209"></span><span class="hs-comment">-- Left [&quot;pizza is expected, got customburitto &quot;,&quot;sushi is expected, got customburitto &quot;,&quot;At least on value required&quot;]</span><span>
+</span><span id="line-210"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFood &quot;custom   &quot;</span><span>
+</span><span id="line-211"></span><span class="hs-comment">-- Left [&quot;pizza is expected, got custom   &quot;,&quot;sushi is expected, got custom   &quot;,&quot;At least on value required&quot;]</span><span>
+</span><span id="line-212"></span><span class="annot"><a href="Lessons.Lesson05.html#parseFood"><span class="hs-identifier hs-type">parseFood</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><a href="Lessons.Lesson05.html#Food"><span class="hs-identifier hs-type">Food</span></a></span><span>
+</span><span id="line-213"></span><span class="hs-comment">-- orElse (orElse parsePizza parseSushi) parseCustom</span><span>
+</span><span id="line-214"></span><span class="hs-comment">-- The above is an alternative way to write </span><span>
+</span><span id="line-215"></span><span id="parseFood"><span class="annot"><span class="annottext">parseFood :: Parser ErrorMsg Food
 </span><a href="Lessons.Lesson05.html#parseFood"><span class="hs-identifier hs-var hs-var">parseFood</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser ErrorMsg Food
 </span><a href="Lessons.Lesson05.html#parsePizza"><span class="hs-identifier hs-var">parsePizza</span></a></span><span> </span><span class="annot"><span class="annottext">Parser ErrorMsg Food
 -&gt; Parser ErrorMsg Food -&gt; Parser ErrorMsg Food
@@ -389,4 +467,4 @@ forall e a. Semigroup e =&gt; Parser e a -&gt; Parser e a -&gt; Parser e a
 forall e a. Semigroup e =&gt; Parser e a -&gt; Parser e a -&gt; Parser e a
 </span><a href="Lessons.Lesson05.html#orElse"><span class="hs-operator hs-var">`orElse`</span></a></span><span> </span><span class="annot"><span class="annottext">Parser ErrorMsg Food
 </span><a href="Lessons.Lesson05.html#parseCustom"><span class="hs-identifier hs-var">parseCustom</span></a></span><span>
-</span><span id="line-138"></span></pre></body></html>
+</span><span id="line-216"></span></pre></body></html>

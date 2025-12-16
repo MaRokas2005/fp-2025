@@ -1,0 +1,321 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Notes taken by Deimant&#279; Davidavi&#269;i&#363;t&#279;</span></span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE InstanceSigs #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wno-orphans #-}</span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Lessons.Lesson10</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Trans.State.Strict</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">State</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">StateT</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">get</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">put</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">runState</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">runStateT</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Trans.Except</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ExceptT</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">throwE</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">runExceptT</span></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Trans.Class</span></span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">lift</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.IO.Class</span></span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">liftIO</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Foldable</span></span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Applicative</span></span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Test.QuickCheck</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Arbitrary</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">arbitrary</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">quickCheckResult</span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Test.QuickCheck.Gen</span></span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Char</span></span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-comment">-- | Basic types for the parser.</span><span>
+</span><span id="line-23"></span><span class="hs-comment">--</span><span>
+</span><span id="line-24"></span><span class="hs-comment">-- @Parser a@ is an `ExceptT` over `State`.</span><span>
+</span><span id="line-25"></span><span class="hs-comment">--</span><span>
+</span><span id="line-26"></span><span class="hs-comment">-- @State Input@ carries the remaining input string.</span><span>
+</span><span id="line-27"></span><span class="hs-comment">--</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- @ExceptT ErrorMsg@ allows failure with an error message.</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">type</span><span> </span><span id="ErrorMsg"><span class="annot"><a href="Lessons.Lesson10.html#ErrorMsg"><span class="hs-identifier hs-var">ErrorMsg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">type</span><span> </span><span id="Input"><span class="annot"><a href="Lessons.Lesson10.html#Input"><span class="hs-identifier hs-var">Input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">type</span><span> </span><span id="Parser"><span class="annot"><a href="Lessons.Lesson10.html#Parser"><span class="hs-identifier hs-var">Parser</span></a></span></span><span> </span><span id="local-6989586621679059382"><span class="annot"><a href="#local-6989586621679059382"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ExceptT</span></span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">State</span></span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#Input"><span class="hs-identifier hs-type">Input</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679059382"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- | Parse a single alphabetic character.</span><span>
+</span><span id="line-35"></span><span class="hs-comment">--</span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- Consumes one character from the input state or fails with an error message.</span><span>
+</span><span id="line-37"></span><span class="hs-comment">--</span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- &gt;&gt;&gt; parse parseLetter &quot;a1&quot;</span><span>
+</span><span id="line-39"></span><span class="hs-comment">-- (Right 'a',&quot;1&quot;)</span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- &gt;&gt;&gt; parse parseLetter &quot;1a&quot;</span><span>
+</span><span id="line-41"></span><span class="hs-comment">-- (Left &quot;A letter is expected, but got 1&quot;,&quot;1a&quot;)</span><span>
+</span><span id="line-42"></span><span class="hs-comment">-- &gt;&gt;&gt; parse parseLetter &quot;&quot;</span><span>
+</span><span id="line-43"></span><span class="hs-comment">-- (Left &quot;A letter is expected but got empty input&quot;,&quot;&quot;)</span><span>
+</span><span id="line-44"></span><span class="annot"><a href="Lessons.Lesson10.html#parseLetter"><span class="hs-identifier hs-type">parseLetter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span>
+</span><span id="line-45"></span><span id="parseLetter"><span class="annot"><span class="annottext">parseLetter :: Parser Char
+</span><a href="Lessons.Lesson10.html#parseLetter"><span class="hs-identifier hs-var hs-var">parseLetter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-46"></span><span>	</span><span id="local-6989586621679059384"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679059384"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">State String String -&gt; ExceptT String (State String) String
+forall (m :: * -&gt; *) a. Monad m =&gt; m a -&gt; ExceptT String m a
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">State String String
+forall (m :: * -&gt; *) s. Monad m =&gt; StateT s m s
+</span><span class="hs-identifier hs-var">get</span></span><span>
+</span><span id="line-47"></span><span>	</span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679059384"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-48"></span><span>		</span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; Parser Char
+forall (m :: * -&gt; *) e a. Monad m =&gt; e -&gt; ExceptT e m a
+</span><span class="hs-identifier hs-var">throwE</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;A letter is expected but got empty input&quot;</span></span><span>
+</span><span id="line-49"></span><span>		</span><span class="hs-special">(</span><span id="local-6989586621679059385"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679059385"><span class="hs-identifier hs-var">h</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621679059386"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679059386"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><span class="hs-identifier hs-var">isAlpha</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679059385"><span class="hs-identifier hs-var">h</span></a></span><span>
+</span><span id="line-50"></span><span>		</span><span class="hs-keyword">then</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-51"></span><span>			</span><span class="annot"><span class="annottext">State String () -&gt; ExceptT String (State String) ()
+forall (m :: * -&gt; *) a. Monad m =&gt; m a -&gt; ExceptT String m a
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; State String ()
+forall (m :: * -&gt; *) s. Monad m =&gt; s -&gt; StateT s m ()
+</span><span class="hs-identifier hs-var">put</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679059386"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>			</span><span class="annot"><span class="annottext">Char -&gt; Parser Char
+forall a. a -&gt; ExceptT String (State String) a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679059385"><span class="hs-identifier hs-var">h</span></a></span><span>
+</span><span id="line-53"></span><span>		</span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">String -&gt; Parser Char
+forall (m :: * -&gt; *) e a. Monad m =&gt; e -&gt; ExceptT e m a
+</span><span class="hs-identifier hs-var">throwE</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Parser Char) -&gt; String -&gt; Parser Char
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;A letter is expected, but got &quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679059385"><span class="hs-identifier hs-var">h</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-comment">-- | Parse two letters using 'do' notation.</span><span>
+</span><span id="line-56"></span><span class="hs-comment">--</span><span>
+</span><span id="line-57"></span><span class="hs-comment">-- &gt;&gt;&gt; parse parseTwoLetters &quot;ds&quot;</span><span>
+</span><span id="line-58"></span><span class="hs-comment">-- (Right &quot;ds&quot;,&quot;&quot;)</span><span>
+</span><span id="line-59"></span><span class="hs-comment">-- &gt;&gt;&gt; parse parseTwoLetters &quot;d5&quot;</span><span>
+</span><span id="line-60"></span><span class="hs-comment">-- (Left &quot;A letter is expected, but got 5&quot;,&quot;5&quot;)</span><span>
+</span><span id="line-61"></span><span class="annot"><a href="Lessons.Lesson10.html#parseTwoLetters"><span class="hs-identifier hs-type">parseTwoLetters</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-62"></span><span id="parseTwoLetters"><span class="annot"><span class="annottext">parseTwoLetters :: ExceptT String (State String) String
+</span><a href="Lessons.Lesson10.html#parseTwoLetters"><span class="hs-identifier hs-var hs-var">parseTwoLetters</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-63"></span><span>	</span><span id="local-6989586621679059389"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679059389"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Parser Char
+</span><a href="Lessons.Lesson10.html#parseLetter"><span class="hs-identifier hs-var">parseLetter</span></a></span><span>
+</span><span id="line-64"></span><span>	</span><span id="local-6989586621679059390"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679059390"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Parser Char
+</span><a href="Lessons.Lesson10.html#parseLetter"><span class="hs-identifier hs-var">parseLetter</span></a></span><span>
+</span><span id="line-65"></span><span>	</span><span class="annot"><span class="annottext">String -&gt; ExceptT String (State String) String
+forall a. a -&gt; ExceptT String (State String) a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679059389"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679059390"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="hs-comment">-- | Same as 'parseTwoLetters', but using applicative style.</span><span>
+</span><span id="line-68"></span><span class="hs-comment">--</span><span>
+</span><span id="line-69"></span><span class="hs-comment">-- &gt;&gt;&gt; parse parseTwoLetters' &quot;ab&quot;</span><span>
+</span><span id="line-70"></span><span class="hs-comment">-- (Right &quot;ab&quot;,&quot;&quot;)</span><span>
+</span><span id="line-71"></span><span class="annot"><a href="Lessons.Lesson10.html#parseTwoLetters%27"><span class="hs-identifier hs-type">parseTwoLetters'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-72"></span><span id="parseTwoLetters%27"><span class="annot"><span class="annottext">parseTwoLetters' :: ExceptT String (State String) String
+</span><a href="Lessons.Lesson10.html#parseTwoLetters%27"><span class="hs-identifier hs-var hs-var">parseTwoLetters'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679059392"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679059392"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679059393"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679059393"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679059392"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679059393"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Char -&gt; String)
+-&gt; Parser Char -&gt; ExceptT String (State String) (Char -&gt; String)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser Char
+</span><a href="Lessons.Lesson10.html#parseLetter"><span class="hs-identifier hs-var">parseLetter</span></a></span><span> </span><span class="annot"><span class="annottext">ExceptT String (State String) (Char -&gt; String)
+-&gt; Parser Char -&gt; ExceptT String (State String) String
+forall a b.
+ExceptT String (State String) (a -&gt; b)
+-&gt; ExceptT String (State String) a
+-&gt; ExceptT String (State String) b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser Char
+</span><a href="Lessons.Lesson10.html#parseLetter"><span class="hs-identifier hs-var">parseLetter</span></a></span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="hs-comment">-- | Running the parser:</span><span>
+</span><span id="line-76"></span><span class="hs-comment">--</span><span>
+</span><span id="line-77"></span><span class="hs-comment">-- &gt;&gt;&gt; :t runExceptT parseTwoLetters</span><span>
+</span><span id="line-78"></span><span class="hs-comment">-- runExceptT parseTwoLetters :: State Input (Either ErrorMsg String)</span><span>
+</span><span id="line-79"></span><span class="hs-comment">--</span><span>
+</span><span id="line-80"></span><span class="hs-comment">-- &gt;&gt;&gt; :t runState (runExceptT parseTwoLetters)</span><span>
+</span><span id="line-81"></span><span class="hs-comment">-- runState (runExceptT parseTwoLetters) :: Input -&gt; (Either ErrorMsg String, Input)</span><span>
+</span><span id="line-82"></span><span class="hs-comment">--</span><span>
+</span><span id="line-83"></span><span class="hs-comment">-- &gt;&gt;&gt; parse parseTwoLetters &quot;&quot;</span><span>
+</span><span id="line-84"></span><span class="hs-comment">-- (Left &quot;A letter is expected but got empty input&quot;,&quot;&quot;)</span><span>
+</span><span id="line-85"></span><span class="hs-comment">-- &gt;&gt;&gt; parse parseTwoLetters &quot;ds&quot;</span><span>
+</span><span id="line-86"></span><span class="hs-comment">-- (Right &quot;ds&quot;,&quot;&quot;)</span><span>
+</span><span id="line-87"></span><span class="hs-comment">-- &gt;&gt;&gt; parse parseTwoLetters &quot;545435&quot;</span><span>
+</span><span id="line-88"></span><span class="hs-comment">-- (Left &quot;A letter is expected, but got 5&quot;,&quot;545435&quot;)</span><span>
+</span><span id="line-89"></span><span>
+</span><span id="line-90"></span><span class="annot"><span class="hs-comment">-- | Helper to run a 'Parser' on an input string.</span></span><span>
+</span><span id="line-91"></span><span id="local-6989586621679059285"><span class="annot"><a href="Lessons.Lesson10.html#parse"><span class="hs-identifier hs-type">parse</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679059285"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#Input"><span class="hs-identifier hs-type">Input</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#ErrorMsg"><span class="hs-identifier hs-type">ErrorMsg</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679059285"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#Input"><span class="hs-identifier hs-type">Input</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-92"></span><span id="parse"><span class="annot"><span class="annottext">parse :: forall a. Parser a -&gt; String -&gt; (Either String a, String)
+</span><a href="Lessons.Lesson10.html#parse"><span class="hs-identifier hs-var hs-var">parse</span></a></span></span><span> </span><span id="local-6989586621679059396"><span class="annot"><span class="annottext">Parser a
+</span><a href="#local-6989586621679059396"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">State String (Either String a)
+-&gt; String -&gt; (Either String a, String)
+forall s a. State s a -&gt; s -&gt; (a, s)
+</span><span class="hs-identifier hs-var">runState</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser a -&gt; State String (Either String a)
+forall e (m :: * -&gt; *) a. ExceptT e m a -&gt; m (Either e a)
+</span><span class="hs-identifier hs-var">runExceptT</span></span><span> </span><span class="annot"><span class="annottext">Parser a
+</span><a href="#local-6989586621679059396"><span class="hs-identifier hs-var">p</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="hs-comment">-- | A more complex monad stack: IO + State + Except.</span><span>
+</span><span id="line-95"></span><span class="hs-comment">--</span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- @Weird a@ fails with an Int, keeps a String state, and can do IO.</span><span>
+</span><span id="line-97"></span><span class="hs-keyword">type</span><span> </span><span id="Weird"><span class="annot"><a href="Lessons.Lesson10.html#Weird"><span class="hs-identifier hs-var">Weird</span></a></span></span><span> </span><span id="local-6989586621679059397"><span class="annot"><a href="#local-6989586621679059397"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ExceptT</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">StateT</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679059397"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-98"></span><span>
+</span><span id="line-99"></span><span class="hs-comment">-- | Version using nested 'lift' calls.</span><span>
+</span><span id="line-100"></span><span class="hs-comment">-- Interacts with the console and stores the last answer in state.</span><span>
+</span><span id="line-101"></span><span class="hs-comment">--</span><span>
+</span><span id="line-102"></span><span class="hs-comment">-- &gt;&gt;&gt; :t runStateT (runExceptT weird) &quot;init&quot;</span><span>
+</span><span id="line-103"></span><span class="hs-comment">-- runStateT (runExceptT weird) &quot;init&quot; :: IO (Either Int Double, String)</span><span>
+</span><span id="line-104"></span><span class="annot"><a href="Lessons.Lesson10.html#weird"><span class="hs-identifier hs-type">weird</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#Weird"><span class="hs-identifier hs-type">Weird</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-105"></span><span id="weird"><span class="annot"><span class="annottext">weird :: Weird Double
+</span><a href="Lessons.Lesson10.html#weird"><span class="hs-identifier hs-var hs-var">weird</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-106"></span><span>	</span><span class="annot"><span class="annottext">StateT String IO () -&gt; ExceptT Int (StateT String IO) ()
+forall (m :: * -&gt; *) a. Monad m =&gt; m a -&gt; ExceptT Int m a
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(StateT String IO () -&gt; ExceptT Int (StateT String IO) ())
+-&gt; StateT String IO () -&gt; ExceptT Int (StateT String IO) ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">IO () -&gt; StateT String IO ()
+forall (m :: * -&gt; *) a. Monad m =&gt; m a -&gt; StateT String m a
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; StateT String IO ()) -&gt; IO () -&gt; StateT String IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; IO ()
+</span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Hello?&quot;</span></span><span>
+</span><span id="line-107"></span><span>	</span><span id="local-6989586621679059400"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679059400"><span class="hs-identifier hs-var">answer</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">StateT String IO String -&gt; ExceptT Int (StateT String IO) String
+forall (m :: * -&gt; *) a. Monad m =&gt; m a -&gt; ExceptT Int m a
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(StateT String IO String -&gt; ExceptT Int (StateT String IO) String)
+-&gt; StateT String IO String -&gt; ExceptT Int (StateT String IO) String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">IO String -&gt; StateT String IO String
+forall (m :: * -&gt; *) a. Monad m =&gt; m a -&gt; StateT String m a
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(IO String -&gt; StateT String IO String)
+-&gt; IO String -&gt; StateT String IO String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">IO String
+</span><span class="hs-identifier hs-var">getLine</span></span><span>
+</span><span id="line-108"></span><span>	</span><span class="annot"><span class="annottext">StateT String IO () -&gt; ExceptT Int (StateT String IO) ()
+forall (m :: * -&gt; *) a. Monad m =&gt; m a -&gt; ExceptT Int m a
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(StateT String IO () -&gt; ExceptT Int (StateT String IO) ())
+-&gt; StateT String IO () -&gt; ExceptT Int (StateT String IO) ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; StateT String IO ()
+forall (m :: * -&gt; *) s. Monad m =&gt; s -&gt; StateT s m ()
+</span><span class="hs-identifier hs-var">put</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679059400"><span class="hs-identifier hs-var">answer</span></a></span><span>
+</span><span id="line-109"></span><span>	</span><span class="annot"><span class="annottext">Double -&gt; Weird Double
+forall a. a -&gt; ExceptT Int (StateT String IO) a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">3.14</span></span><span>
+</span><span id="line-110"></span><span class="hs-comment">--</span><span>
+</span><span id="line-111"></span><span class="hs-comment">-- &gt;&gt;&gt; :t weird</span><span>
+</span><span id="line-112"></span><span class="hs-comment">-- weird :: Weird Double</span><span>
+</span><span id="line-113"></span><span class="hs-comment">-- &gt;&gt;&gt; :t runExceptT weird</span><span>
+</span><span id="line-114"></span><span class="hs-comment">-- runExceptT weird :: StateT String IO (Either Int Double)</span><span>
+</span><span id="line-115"></span><span class="hs-comment">-- &gt;&gt;&gt; :t runStateT (runExceptT weird) &quot;fsd&quot;</span><span>
+</span><span id="line-116"></span><span class="hs-comment">-- runStateT (runExceptT weird) &quot;fsd&quot; :: IO (Either Int Double, String)</span><span>
+</span><span id="line-117"></span><span>
+</span><span id="line-118"></span><span class="annot"><span class="hs-comment">-- | Same behavior, but with 'liftIO' for cleaner IO lifting.</span></span><span>
+</span><span id="line-119"></span><span class="annot"><a href="Lessons.Lesson10.html#weird%27"><span class="hs-identifier hs-type">weird'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#Weird"><span class="hs-identifier hs-type">Weird</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-120"></span><span id="weird%27"><span class="annot"><span class="annottext">weird' :: Weird Double
+</span><a href="Lessons.Lesson10.html#weird%27"><span class="hs-identifier hs-var hs-var">weird'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-121"></span><span>	</span><span class="annot"><span class="annottext">IO () -&gt; ExceptT Int (StateT String IO) ()
+forall a. IO a -&gt; ExceptT Int (StateT String IO) a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; ExceptT Int (StateT String IO) ())
+-&gt; IO () -&gt; ExceptT Int (StateT String IO) ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; IO ()
+</span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Hello?&quot;</span></span><span>
+</span><span id="line-122"></span><span>	</span><span id="local-6989586621679059403"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679059403"><span class="hs-identifier hs-var">answer</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO String -&gt; ExceptT Int (StateT String IO) String
+forall a. IO a -&gt; ExceptT Int (StateT String IO) a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO String -&gt; ExceptT Int (StateT String IO) String)
+-&gt; IO String -&gt; ExceptT Int (StateT String IO) String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">IO String
+</span><span class="hs-identifier hs-var">getLine</span></span><span>
+</span><span id="line-123"></span><span>	</span><span class="annot"><span class="annottext">StateT String IO () -&gt; ExceptT Int (StateT String IO) ()
+forall (m :: * -&gt; *) a. Monad m =&gt; m a -&gt; ExceptT Int m a
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(StateT String IO () -&gt; ExceptT Int (StateT String IO) ())
+-&gt; StateT String IO () -&gt; ExceptT Int (StateT String IO) ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; StateT String IO ()
+forall (m :: * -&gt; *) s. Monad m =&gt; s -&gt; StateT s m ()
+</span><span class="hs-identifier hs-var">put</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679059403"><span class="hs-identifier hs-var">answer</span></a></span><span>
+</span><span id="line-124"></span><span>	</span><span class="annot"><span class="annottext">Double -&gt; Weird Double
+forall a. a -&gt; ExceptT Int (StateT String IO) a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">3.14</span></span><span>
+</span><span id="line-125"></span><span>
+</span><span id="line-126"></span><span class="annot"><span class="hs-comment">-- | A simple sum type used with QuickCheck.</span></span><span>
+</span><span id="line-127"></span><span class="hs-keyword">data</span><span> </span><span id="SomeData"><span class="annot"><a href="Lessons.Lesson10.html#SomeData"><span class="hs-identifier hs-var">SomeData</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Foo"><span class="annot"><a href="Lessons.Lesson10.html#Foo"><span class="hs-identifier hs-var">Foo</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Bar"><span class="annot"><a href="Lessons.Lesson10.html#Bar"><span class="hs-identifier hs-var">Bar</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679059407"><span id="local-6989586621679059417"><span id="local-6989586621679059421"><span class="annot"><span class="annottext">Int -&gt; SomeData -&gt; String -&gt; String
+[SomeData] -&gt; String -&gt; String
+SomeData -&gt; String
+(Int -&gt; SomeData -&gt; String -&gt; String)
+-&gt; (SomeData -&gt; String)
+-&gt; ([SomeData] -&gt; String -&gt; String)
+-&gt; Show SomeData
+forall a.
+(Int -&gt; a -&gt; String -&gt; String)
+-&gt; (a -&gt; String) -&gt; ([a] -&gt; String -&gt; String) -&gt; Show a
+$cshowsPrec :: Int -&gt; SomeData -&gt; String -&gt; String
+showsPrec :: Int -&gt; SomeData -&gt; String -&gt; String
+$cshow :: SomeData -&gt; String
+show :: SomeData -&gt; String
+$cshowList :: [SomeData] -&gt; String -&gt; String
+showList :: [SomeData] -&gt; String -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
+</span><span id="line-128"></span><span>
+</span><span id="line-129"></span><span class="hs-comment">-- | Arbitrary instance for SomeData.</span><span>
+</span><span id="line-130"></span><span class="hs-comment">--</span><span>
+</span><span id="line-131"></span><span class="hs-comment">-- Generates Foo with a random string or Bar with a random integer.</span><span>
+</span><span id="line-132"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679059427"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#SomeData"><span class="hs-identifier hs-type">SomeData</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-133"></span><span>	</span><span class="annot"><span class="hs-identifier hs-type">arbitrary</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Gen</span></span><span> </span><span class="annot"><a href="Lessons.Lesson10.html#SomeData"><span class="hs-identifier hs-type">SomeData</span></a></span><span>
+</span><span id="line-134"></span><span>	</span><span id="local-6989586621679059440"><span class="annot"><span class="annottext">arbitrary :: Gen SomeData
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Gen SomeData] -&gt; Gen SomeData
+forall a. [Gen a] -&gt; Gen a
+</span><span class="hs-identifier hs-var">oneof</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">(String -&gt; SomeData) -&gt; Gen String -&gt; Gen SomeData
+forall a b. (a -&gt; b) -&gt; Gen a -&gt; Gen b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; SomeData
+</span><a href="Lessons.Lesson10.html#Foo"><span class="hs-identifier hs-var">Foo</span></a></span><span> </span><span class="annot"><span class="annottext">Gen String
+forall a. Arbitrary a =&gt; Gen a
+</span><span class="hs-identifier hs-var">arbitrary</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; SomeData) -&gt; Gen Integer -&gt; Gen SomeData
+forall a b. (a -&gt; b) -&gt; Gen a -&gt; Gen b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; SomeData
+</span><a href="Lessons.Lesson10.html#Bar"><span class="hs-identifier hs-var">Bar</span></a></span><span> </span><span class="annot"><span class="annottext">Gen Integer
+forall a. Arbitrary a =&gt; Gen a
+</span><span class="hs-identifier hs-var">arbitrary</span></span><span class="hs-special">]</span><span>
+</span><span id="line-135"></span></pre></body></html>
