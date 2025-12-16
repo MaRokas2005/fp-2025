@@ -1,5 +1,6 @@
 name:                fp2025
 version:             0.1.0.0
+
 github:              "vipo/fp-2025"
 license:             BSD-3-Clause
 author:              "Author name here"
@@ -44,6 +45,8 @@ library:
     - strict
     - transformers
     - async
+    - http-conduit      # ADDED for Lib4 HTTP client
+    - bytestring        # ADDED for Lib4 HTTP bodies
   when:
   - condition: false
     other-modules: Paths_fp2025
@@ -75,6 +78,36 @@ executables:
     - repline
     - stm
     - async
+  fp2025-four:
+    main:                Main.hs
+    source-dirs:         app4-client
+    ghc-options:
+    - -rtsopts
+    dependencies:
+    - fp2025
+    - free
+    - async
+    - transformers
+    - http-conduit
+    - bytestring
+    - text
+  fp2025-five:
+    main:                Main.hs
+    source-dirs:         app5-server
+    ghc-options:
+    - -rtsopts
+    dependencies:
+    - fp2025
+    - stm
+    - async
+    - transformers
+    - scotty
+    - http-types
+    - text
+    - bytestring
+    - wai-extra
+    - directory
+    - aeson
 
 tests:
   fp2024-test:
